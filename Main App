@@ -1,0 +1,390 @@
+#include <dht.h>   
+// Load Temp monitor details
+dht DHT;
+
+// Load Led Control
+#include "LedControl.h"               
+LedControl lc=LedControl(12,11,10,1);    // Control Pins for Led Display
+
+// setup temp sensors
+#define DHT1_PIN 2
+#define DH1TYPE DHT11 
+#define DHT2_PIN 3
+#define DH2TYPE DHT22
+
+// timing for reading temperature minimim 2 seconds = 2000
+unsigned long interval=5000;  // the time we need to wait betwen reads of Temp Sensors
+unsigned long previousMillis=0; // millis() returns an unsigned long Temp Sensor 1
+unsigned long previousMillis1=0; // millis() returns an unsigned long Temp Sensor 2
+
+// Setup Timing of how long the door bell rings for
+unsigned long intervalbell=10000;  // Bell on and off (1000 = 1 Second)
+
+//  Sensor 1 Variables
+int a;
+int b;
+int c;
+int d;
+
+//  Sensor 2 Variables
+int a1;
+int b1;
+int c1;
+int d1;
+
+// Setup switch Pins
+const int switch1 = 51;               // Switch 1 OFF
+const int switch2 = 53;               // Switch 1 ON
+const int switch3 = 47;               // Switch 2 OFF
+const int switch4 = 49;               // Switch 2 ON
+const int switch5 = 43;               // Switch 3 OFF
+const int switch6 = 45;               // Switch 3 ON
+const int switch7 = 39;              // Switch 4 OFF
+const int switch8 = 41;              // Switch 4 ON
+
+// Setup DoorBell Input
+const int switch9 = 37;              // Input for Door Bell Trigger
+
+//  Setup led Pins
+const int led1 = 32;                  // Led Switch
+const int led2 = 30;                  // Led Switch
+const int led3 = 28;                  // Led Switch
+const int led4 = 26;                  // Led Switch
+const int led5 = 24;                  // Led Door Bell
+const int led6 = 22;                  // Led Power
+
+
+
+
+// Setup Led and Switch States
+int ledState1 = LOW;                  // the current state of the output pin
+int buttonState1;                     // the current reading from the input pin
+int lastButtonState1 = LOW;           // the previous reading from the input pin
+int ledState2 = LOW;                  // the current state of the output pin
+int buttonState2;                     // the current reading from the input pin
+int lastButtonState2 = LOW;           // the previous reading from the input pin
+int ledState3 = LOW;                  // the current state of the output pin
+int buttonState3;                     // the current reading from the input pin
+int lastButtonState3 = LOW;           // the previous reading from the input pin
+int ledState4 = LOW;                  // the current state of the output pin
+int buttonState4;                     // the current reading from the input pin
+int lastButtonState4 = LOW;           // the previous reading from the input pin
+int ledState5 = LOW;                  // the current state of the output pin
+int buttonState5;                     // the current reading from the input pin
+int lastButtonState5 = LOW;           // the previous reading from the input pin
+int ledState = LOW;                   // the current state of the output pin
+int buttonState6;                     // the current reading from the input pin
+int lastButtonState6 = LOW;           // the previous reading from the input pin
+int ledState7 = LOW;                  // the current state of the output pin
+int buttonState7;                     // the current reading from the input pin
+int lastButtonState7 = LOW;           // the previous reading from the input pin
+int ledState8 = LOW;                  // the current state of the output pin
+int buttonState8;                     // the current reading from the input pin
+int lastButtonState8 = LOW;           // the previous reading from the input pin
+
+// Setup State for Door Bell
+int buttonState9;                     // the current reading from the input pin
+int lastButtonState9 = LOW;           // the previous reading from the input pin
+
+// Setup debounce for Switches
+long lastDebounceTime = 0;            // the last time the output pin was toggled
+long debounceDelay = 50;              // the debounce time; increase if the output flickers
+
+// Setup Pins as input or outputs
+void setup() {
+
+pinMode(switch1, INPUT);
+pinMode(switch2, INPUT);
+pinMode(switch3, INPUT);
+pinMode(switch4, INPUT);
+pinMode(switch5, INPUT);
+pinMode(switch6, INPUT);
+pinMode(switch7, INPUT);
+pinMode(switch8, INPUT);
+pinMode(switch9, INPUT);
+pinMode(led1, OUTPUT);
+pinMode(led2, OUTPUT);
+pinMode(led3, OUTPUT);
+pinMode(led4, OUTPUT);
+pinMode(led5, OUTPUT);
+pinMode(led6, OUTPUT);
+
+
+// Scroll the Leds on Startup
+digitalWrite(led1, HIGH);
+delay(100);
+digitalWrite(led1, LOW);
+digitalWrite(led2, HIGH);
+delay(100);
+digitalWrite(led2, LOW);
+digitalWrite(led3, HIGH);
+delay(100);
+digitalWrite(led3, LOW);
+digitalWrite(led4, HIGH);
+delay(100);
+digitalWrite(led4, LOW);
+delay(100);
+digitalWrite(led5, HIGH);
+delay(100);
+digitalWrite(led5, LOW);
+digitalWrite(led6, HIGH);
+delay(100);
+digitalWrite(led6, LOW);
+delay(100);
+digitalWrite(led1, HIGH);
+delay(100);
+digitalWrite(led1, LOW);
+digitalWrite(led2, HIGH);
+delay(100);
+digitalWrite(led2, LOW);
+digitalWrite(led3, HIGH);
+delay(100);
+digitalWrite(led3, LOW);
+digitalWrite(led4, HIGH);
+delay(100);
+digitalWrite(led4, LOW);
+delay(100);
+digitalWrite(led5, HIGH);
+delay(100);
+digitalWrite(led5, LOW);
+digitalWrite(led6, HIGH);
+delay(100);
+digitalWrite(led6, LOW);
+delay(100);
+digitalWrite(led1, HIGH);
+delay(100);
+digitalWrite(led1, LOW);
+digitalWrite(led2, HIGH);
+delay(100);
+digitalWrite(led2, LOW);
+digitalWrite(led3, HIGH);
+delay(100);
+digitalWrite(led3, LOW);
+digitalWrite(led4, HIGH);
+delay(100);
+digitalWrite(led4, LOW);
+delay(100);
+digitalWrite(led5, HIGH);
+delay(100);
+digitalWrite(led5, LOW);
+digitalWrite(led6, HIGH);
+delay(100);
+digitalWrite(led6, LOW);
+delay(100);
+digitalWrite(led6, HIGH);
+// test display
+    lc.setDigit(0,0,8,true);
+    lc.setDigit(0,1,8,true);
+    lc.setDigit(0,2,8,true);
+    lc.setDigit(0,3,8,true);
+    lc.setDigit(0,4,8,true);
+    lc.setDigit(0,5,8,true);
+    lc.setDigit(0,6,8,true);
+    lc.setDigit(0,7,8,true);
+ 
+//Setup Serial Ports
+Serial.begin(115200);                   // connect to the Serial port    19 (RX) and 18 (TX), 
+Serial.flush();                         // Flush Serial Port   
+delay(100);
+
+// Setup LED Display
+lc.shutdown(0,false);                   // Enable display 
+lc.setIntensity(0,1);                   // Set brightness level (0 is min, 15 is max) 
+lc.clearDisplay(0);                     // Clear display register   
+
+}  
+// Main Loop of Program 
+void loop() {
+  readtemp();
+  readswitch();
+  readbell();
+
+}
+// Doorbell
+void readbell(){
+// Begin Switch 9 Bell Input
+  int reading9 = digitalRead(switch9);
+  if (reading9 != lastButtonState9) {
+    lastDebounceTime = millis();
+  }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading9 != buttonState9) {
+      buttonState9 = reading9;
+      if (buttonState9 == HIGH) { 
+          Serial.println(9);
+          digitalWrite(led5, LOW);     
+      }
+    }
+  }  
+  lastButtonState9 = reading9;
+// End Switch 9
+}
+
+void readtemp(){
+//Sensor 1 DHT 1
+  if ((unsigned long)(millis() - previousMillis) >= interval) {
+    previousMillis = millis();            
+    int chk = DHT.read22(DHT1_PIN);  
+    Serial.print("DH 1  ");
+    a = (DHT.temperature);
+    Serial.println(a);
+    b = a%100/10;
+    c = a%10;
+    lc.setDigit(0,6,b,false);
+    lc.setDigit(0,5,c,true);     
+  }
+  
+// Read Sensor  DHT 2
+  if ((unsigned long)(millis() - previousMillis1) >= interval) {
+    previousMillis1 = millis();            
+    int chk = DHT.read11(DHT2_PIN); 
+    Serial.print("DH 2  "); 
+    a1 = (DHT.temperature);
+    Serial.println(a1); 
+    b1 = a1%100/10;
+    c1 = a1%10;
+    lc.setDigit(0,2,b1,false);
+    lc.setDigit(0,1,c1,true);
+  }
+}
+void readswitch(){
+// Begin Switch 1
+  int reading1 = digitalRead(switch1);
+  if (reading1 != lastButtonState1) {
+    lastDebounceTime = millis();
+  }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading1 != buttonState1) {
+      buttonState1 = reading1;
+      if (buttonState1 == HIGH) { 
+          Serial.println(1);
+          digitalWrite(led1, LOW);     
+      }
+    }
+  }  
+  lastButtonState1 = reading1;
+// End Switch 1
+
+// Begin Switch 2
+  int reading2 = digitalRead(switch2);
+  if (reading2 != lastButtonState2) {
+    lastDebounceTime = millis();
+  }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading2 != buttonState2) {
+      buttonState2 = reading2;
+      if (buttonState2 == HIGH) {                     
+      Serial.println(2);  
+      digitalWrite(led1, HIGH);     
+     }
+    }
+  }
+  lastButtonState2 = reading2;
+
+// Begin Switch 3
+  int reading3 = digitalRead(switch3);
+  if (reading3 != lastButtonState3) {
+    lastDebounceTime = millis();
+  }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading3 != buttonState3) {
+     buttonState3 = reading3;
+     if (buttonState3 == HIGH) {         
+       Serial.println(3);  
+        digitalWrite(led2, LOW); 
+     }
+    }
+ }
+  lastButtonState3 = reading3;
+
+// Begin Switch 4
+  int reading4 = digitalRead(switch4);
+  if (reading4 != lastButtonState4) {
+    lastDebounceTime = millis();
+ }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading4 != buttonState4) {
+      buttonState4 = reading4;
+      if (buttonState4 == HIGH) {      
+        Serial.println(4);  
+       digitalWrite(led2, HIGH);
+      }
+    }
+  }
+  lastButtonState4 = reading4;
+
+// Begin Switch 5
+ int reading5 = digitalRead(switch5);
+  if (reading5 != lastButtonState5) {
+    lastDebounceTime = millis();
+ }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading5 != buttonState5) {
+      buttonState5 = reading5;
+     if (buttonState5 == HIGH) {
+        Serial.println(5);  
+        digitalWrite(led3, LOW); 
+      }
+    }
+  }
+  lastButtonState5 = reading5;
+
+// Begin Switch 6
+ int reading6 = digitalRead(switch6);
+  if (reading6 != lastButtonState6) {
+    lastDebounceTime = millis();
+  }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading6 != buttonState6) {
+      buttonState6 = reading6;
+      if (buttonState6 == HIGH) {
+        Serial.println(6);  
+        digitalWrite(led3, HIGH);     
+     }
+    }
+  }
+  lastButtonState6 = reading6;
+
+// Begin Switch 7
+ int reading7 = digitalRead(switch7);
+  if (reading7 != lastButtonState7) {
+    lastDebounceTime = millis();
+ }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading7 != buttonState7) {
+      buttonState7 = reading7;
+      if (buttonState7 == HIGH) {
+        Serial.println(7);  
+         digitalWrite(led4, LOW); 
+      }
+    }
+  }
+ lastButtonState7 = reading7;
+
+// Begin Switch 8
+ int reading8 = digitalRead(switch8);
+  if (reading8 != lastButtonState8) {
+    lastDebounceTime = millis();
+  }  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading8 != buttonState8) {
+      buttonState8 = reading8;
+      if (buttonState8 == HIGH) {
+        Serial.println(8);  
+        digitalWrite(led4, HIGH);     //  
+      }
+    }
+  }
+  lastButtonState8 = reading8;
+
+// End of Read Switches  
+
+// End of Program
+}
+
+
+ 
+
+
+
+
